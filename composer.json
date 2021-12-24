@@ -1,0 +1,18 @@
+{
+    "name": "tganiullin/easy-orm",
+    "type": "library",
+    "autoload": {
+        "psr-4": {
+            "Tganiullin\\EasyOrm\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Timur Ganiullin",
+            "email": "79270440968@yandex.ru"
+        }
+    ],
+    "require": {
+      "ext-mysqli": "*"
+    }
+}
