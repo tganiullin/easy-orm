@@ -2,87 +2,90 @@
 namespace Tganiullin\EasyOrm;
 
 use mysqli;
+use mysqli_result;
 
 class EasyOrm{
-    private mysqli $mysqli;
+    protected mysqli $mysqli;
+    private array $where = [];
+    private array $orderBy = [];
     public bool $debug = false;
-    protected string $table;
+    protected string $table = 'users';
 
     public function __construct() {
-        $mysqli = new mysqli('localhost', 'root', 'GH1281w!', 'ekaterina_zhuravleva');
+        $mysqli = new mysqli('217.182.46.178', 'root', 'pass', 'testdb');
         if ($mysqli->connect_error) {
             die('Connect Error (' . $mysqli->connect_errno . ') ' . $mysqli->connect_error);
         }
         $this->mysqli = $mysqli;
     }
 
-    public function insertId() {
-        return $this->mysqli->insert_id;
-    }
-
-    /**
-     * Построить where
-     * @param array $params
-     * @return string|null
-     */
-    private function where(array $params) {
-        if (!empty($params)) {
-            foreach ($params as $key => $param) {
-                $open_bracket = null;
-                $close_bracket = null;
-
-                $many = isset($param[3]) ? $param[3] : null;
-                if (isset($param[4])) {
-                    $bracket = $param[4];
-                    $open_bracket = $bracket == '(' ? '(' : null;
-                    $close_bracket = $bracket == ')' ? ')' : null;
-                }
-                $where[] = $open_bracket . $param[0] . $param[1] . '\'' . $param[2] . '\'' . $close_bracket . ' ' . $many;
-            }
-            $where = ' WHERE ' . implode(' ', $where);
-        } else {
-            $where = null;
-        }
-        return $where;
-    }
-
-    protected function query($sql) {
+    protected function query($sql){
         if ($this->debug) echo $sql . PHP_EOL;
         return $this->mysqli->query($sql);
     }
 
-    protected function select(array $where = []) {
-        $where = $this->where($where);
-        $sql = 'SELECT * FROM ' . $this->table . $where; //Формируем SQL
-        return $this->query($sql)->fetch_all(MYSQLI_ASSOC);
+    private function buildWhere(): ?string {
+        return !empty($this->where) ? ' WHERE ' . implode(' ', $this->where) : null;
     }
 
-    protected function insert(array $params) {
-        foreach ($params as $column => $value) {
-            $columns[] = $column;
-            $values[] = '\'' . $value . '\'';
+    private function buildOrderBy(): ?string {
+        return !empty($this->orderBy) ? ' ORDER BY ' . implode(', ', $this->orderBy) : null;
+    }
+
+    public function where($column, $mark, $value, $operator = null, $bracket = null): static {
+        $open_bracket = null;
+        $close_bracket = null;
+        $operator = $operator ?? null;
+        if(isset($bracket)){
+            $open_bracket = $bracket == '(' ? '(' : null;
+            $close_bracket = $bracket == ')' ? ')' : null;
         }
-
-        $columns = implode(', ', $columns);
-        $values = implode(', ', $values);
-
-        $sql = 'INSERT INTO ' . $this->table . ' (' . $columns . ') VALUES (' . $values . ')';
-        return $this->query($sql);
+        $this->where[] = $open_bracket . $column . $mark . '\'' . $value . '\'' . $close_bracket . ' ' . $operator;
+        return $this;
     }
 
-    protected function update(array $where, array $params) {
+    public function orderBy($column, $order = 'ASC'): static {
+        $this->orderBy[] = $column . ' ' . $order;
+        return $this;
+    }
+
+    public function update(array $params): mysqli_result|bool {
         foreach ($params as $column => $value) {
             $values[] = $column . ' = ' . '\'' . $value . '\'';
         }
         $values = implode(', ', $values);
-        $where = $this->where($where);
-        $sql = 'UPDATE ' . $this->table . ' SET ' . $values . $where;
+
+        $sql = 'UPDATE ' . $this->table . ' SET ' . $values . $this->buildWhere();
         return $this->query($sql);
     }
 
-    protected function delete(array $where) {
-        $where = $this->where($where);
-        $sql = 'DELETE FROM ' . $this->table . $where;
+    public function get(array $columns = null){
+        $c = [];
+        if(!empty($columns)) {
+            foreach ($columns as $key => $column) {
+                $c[] = is_int($key) ? $column : $key . ' as ' . $column;
+            }
+            $c = implode(', ', $c);
+        }else{
+            $c = '*';
+        }
+        $sql = 'SELECT '.$c.' FROM ' . $this->table . $this->buildWhere() . $this->buildOrderBy(); //Формируем SQL
+        return $this->query($sql)->fetch_all(MYSQLI_ASSOC);
+    }
+
+    public function insert(array $params){
+        foreach($params as $column => $value){
+            $columns[] = $column;
+            $values[] = '\'' . $value . '\'';
+        }
+        $columns = implode(', ', $columns);
+        $values = implode(', ', $values);
+        $sql = 'INSERT INTO '.$this->table.' ('.$columns.') VALUES ('.$values.')';
+        return $this->query($sql);
+    }
+
+    public function delete(){
+        $sql = 'DELETE FROM ' . $this->table . $this->buildWhere();
         return $this->query($sql);
     }
 }
