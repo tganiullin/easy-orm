@@ -10,7 +10,7 @@ class Config
         self::$config = $config;
     }
 
-    public static function get(string $key = null, $default = null)
+    public static function get(?string $key = null, $default = null)
     {
         if ($key === null) {
             return self::$config;
