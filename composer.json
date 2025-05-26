@@ -1,6 +1,10 @@
 {
     "name": "tganiullin/easy-orm",
+    "description": "Простая и безопасная ORM библиотека для PHP с поддержкой MySQL",
     "type": "library",
+    "keywords": ["orm", "mysql", "database", "php", "active-record", "query-builder"],
+    "homepage": "https://github.com/tganiullin/easy-orm",
+    "license": "MIT",
     "autoload": {
         "psr-4": {
             "Tganiullin\\EasyOrm\\": "src/"
@@ -9,10 +13,17 @@
     "authors": [
         {
             "name": "Timur Ganiullin",
-            "email": "79270440968@yandex.ru"
+            "email": "79270440968@yandex.ru",
+            "role": "Developer"
         }
     ],
     "require": {
-      "ext-mysqli": "*"
-    }
+        "php": ">=8.0",
+        "ext-mysqli": "*"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.0"
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
 }
