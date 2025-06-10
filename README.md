@@ -115,6 +115,23 @@ $result = $orm->table('users')
 $affectedRows = $orm->getAffectedRows();
 ```
 
+### Транзакции
+
+```php
+$orm->beginTransaction();
+
+try {
+    $orm->table('users')->insert([
+        'name' => 'Transactional User',
+        'email' => 'tx@example.com'
+    ]);
+    $orm->commit();
+} catch (Exception $e) {
+    $orm->rollback();
+    throw $e;
+}
+```
+
 ### Использование моделей (Active Record)
 
 ```php
