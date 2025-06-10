@@ -18,15 +18,7 @@ class EasyOrm
 
     public function __construct(array $config = [])
     {
-        $defaultConfig = [
-            'host' => 'localhost',
-            'username' => 'root',
-            'password' => '',
-            'database' => 'test',
-            'port' => 3306,
-            'charset' => 'utf8mb4'
-        ];
-
+        $defaultConfig = Config::database();
         $config = array_merge($defaultConfig, $config);
 
         try {
@@ -337,6 +329,21 @@ class EasyOrm
     public function getAffectedRows(): int
     {
         return $this->mysqli->affected_rows;
+    }
+
+    public function beginTransaction(): bool
+    {
+        return $this->mysqli->begin_transaction();
+    }
+
+    public function commit(): bool
+    {
+        return $this->mysqli->commit();
+    }
+
+    public function rollback(): bool
+    {
+        return $this->mysqli->rollback();
     }
 
     private function resetQuery(): void
